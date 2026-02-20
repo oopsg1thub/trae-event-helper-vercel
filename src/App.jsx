@@ -408,7 +408,7 @@ function App() {
             
             <div className="mb-6">
               <label className="block text-lg font-medium text-[#00ff88] mb-2">
-                现场录入 <span className="text-red-400">*</span>
+                现场录入
               </label>
               <div className="flex flex-col sm:flex-row gap-3">
                 <input
