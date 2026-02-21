@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { UserPlus, Gift, Edit2, Check, X, Download, Users, Trophy, RefreshCw, Upload, CheckCircle, XCircle, Trash2, FileText } from 'lucide-react'
 import './index.css'
 
 const TAGS = [
   { value: 'student', label: '学生', color: 'text-cyan-400 border-cyan-400' },
-  { value: 'kol', label: 'KOL', color: 'text-purple-400 border-purple-400' },
-  { value: 'enterprise', label: '企业代表', color: 'text-green-400 border-green-400' },
+  { value: 'kol', label: 'KOL', color: 'text-purple-300 border-purple-300' },
+  { value: 'enterprise', label: '企业', color: 'text-pink-300 border-pink-300' },
 ]
 
 const TAG_MAP = {
@@ -216,7 +216,12 @@ function App() {
     return tag ? tag.color : 'text-gray-400 border-gray-400'
   }
 
-  const filteredParticipants = () => {
+  const [scrollTop, setScrollTop] = useState(0)
+  const listRef = useRef(null)
+  const itemHeight = 68
+  const visibleItems = 12
+
+  const filteredParticipants = useCallback(() => {
     if (!searchQuery.trim()) return participants
     
     const query = searchQuery.toLowerCase().trim()
@@ -225,7 +230,16 @@ function App() {
       const tagLabel = getTagLabel(p.tag).toLowerCase().includes(query)
       return nameMatch || tagLabel
     })
-  }
+  }, [participants, searchQuery])
+
+  const filtered = filteredParticipants()
+  const startIndex = Math.floor(scrollTop / itemHeight)
+  const endIndex = Math.min(startIndex + visibleItems + 2, filtered.length)
+  const visibleParticipants = filtered.slice(startIndex, endIndex)
+  
+  const handleScroll = useCallback((e) => {
+    setScrollTop(e.target.scrollTop)
+  }, [])
 
   const getEligibleParticipants = () => {
     return participants.filter(p => !p.isWinner && p.isCheckedIn)
@@ -340,16 +354,18 @@ function App() {
   return (
     <div className="min-h-screen bg-[#1a1b1d] text-[#f0f0f0] font-mono">
       <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold text-center text-[#00ff88] mb-6 pb-4 border-b border-[#888888]">
-          &gt; 线下活动管理助手 &lt;
-        </h1>
+        <div className="flex justify-center mb-6 pb-4 border-b border-[#888888]">
+          <h1 className="text-3xl font-bold text-[#00ff88] title-neon typewriter-container">
+            <span className="typewriter-text">&gt; 线下活动管理助手 &lt;</span>
+          </h1>
+        </div>
         
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => setActiveTab('checkin')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all btn-hover-scale ${
               activeTab === 'checkin'
-                ? 'bg-[#00ff88]/20 text-[#00ff88] border-2 border-[#00ff88]'
+                ? 'bg-[#00ff88]/20 text-[#00ff88] border-2 border-[#00ff88] tab-active-glow'
                 : 'bg-[#888888]/20 text-gray-400 hover:text-[#00ff88] hover:border-[#00ff88]/50 border-2 border-[#888888]'
             }`}
           >
@@ -358,9 +374,9 @@ function App() {
           </button>
           <button
             onClick={() => setActiveTab('lottery')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all btn-hover-scale ${
               activeTab === 'lottery'
-                ? 'bg-[#00ff88]/20 text-[#00ff88] border-2 border-[#00ff88]'
+                ? 'bg-[#00ff88]/20 text-[#00ff88] border-2 border-[#00ff88] tab-active-glow'
                 : 'bg-[#888888]/20 text-gray-400 hover:text-[#00ff88] hover:border-[#00ff88]/50 border-2 border-[#888888]'
             }`}
           >
@@ -370,7 +386,7 @@ function App() {
         </div>
 
         {activeTab === 'checkin' && (
-          <div className="bg-[#888888]/10 rounded-xl border border-[#888888] p-6">
+          <div className="bg-[#888888]/10 rounded-xl border border-[#888888] p-6 card-glow">
             {showBatchImport && (
               <div className="mb-6 p-4 bg-[#888888]/10 rounded-lg border border-[#888888]">
                 <div className="text-sm text-gray-400 mb-3">
@@ -389,13 +405,13 @@ function App() {
                   <button
                     onClick={handleBatchImport}
                     disabled={!batchInput.trim()}
-                    className="px-6 py-2 bg-[#00ff88] text-[#0f172a] rounded-lg hover:bg-[#00cc6a] disabled:bg-gray-600 disabled:cursor-not-allowed transition-all font-bold"
+                    className="px-6 py-2 bg-[#00ff88] text-[#0f172a] rounded-lg hover:bg-[#00cc6a] disabled:bg-gray-600 disabled:cursor-not-allowed transition-all font-bold btn-hover-scale"
                   >
                     导入
                   </button>
                   <button
                     onClick={() => setBatchInput('')}
-                    className="px-6 py-2 border-2 border-gray-500 text-gray-400 rounded-lg hover:border-gray-300 hover:text-gray-300 transition-all"
+                    className="px-6 py-2 border-2 border-gray-500 text-gray-400 rounded-lg hover:border-gray-300 hover:text-gray-300 transition-all btn-hover-scale"
                   >
                     清空
                   </button>
@@ -432,14 +448,14 @@ function App() {
                 <button
                   onClick={handleAddParticipant}
                   disabled={!nameInput.trim()}
-                  className="flex items-center gap-2 px-4.5 py-2 bg-[#00ff88] text-[#0f172a] rounded-lg hover:bg-[#00cc6a] disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center gap-2 font-bold"
+                  className="flex items-center gap-2 px-4.5 py-2 bg-[#00ff88] text-[#0f172a] rounded-lg hover:bg-[#00cc6a] disabled:bg-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed transition-all flex items-center gap-2 font-bold btn-hover-scale"
                 >
                   <UserPlus size={18} />
                   添加人员
                 </button>
                 <button
                   onClick={() => setShowBatchImport(!showBatchImport)}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#888888]/20 text-[#00ff88] rounded-lg border-2 border-[#888888] hover:border-[#00ff88] hover:bg-[#00ff88]/10 transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#888888]/20 text-[#00ff88] rounded-lg border-2 border-[#888888] hover:border-[#00ff88] hover:bg-[#00ff88]/10 transition-all btn-hover-scale"
                 >
                   <Upload size={18} />
                   {showBatchImport ? '收起' : '批量导入'}
@@ -466,7 +482,7 @@ function App() {
                   <button
                     onClick={exportData}
                     disabled={participants.length === 0}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#888888]/20 text-[#00ff88] rounded-lg border-2 border-[#888888] hover:border-[#00ff88] hover:bg-[#00ff88]/10 disabled:bg-gray-600 disabled:border-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed transition-all font-medium"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#888888]/20 text-[#00ff88] rounded-lg border-2 border-[#888888] hover:border-[#00ff88] hover:bg-[#00ff88]/10 disabled:bg-gray-600 disabled:border-gray-600 disabled:text-gray-400 disabled:cursor-not-allowed transition-all font-medium btn-hover-scale"
                   >
                     <Download size={18} />
                     导出数据
@@ -484,7 +500,7 @@ function App() {
                       })
                     }}
                     disabled={participants.length === 0}
-                    className="flex items-center gap-2 px-4 py-2 border-2 border-red-400 text-red-400 rounded-lg hover:bg-red-500/10 disabled:border-gray-600 disabled:text-gray-600 disabled:cursor-not-allowed transition-all font-medium"
+                    className="flex items-center gap-2 px-4 py-2 border-2 border-red-400 text-red-400 rounded-lg hover:bg-red-500/10 disabled:border-gray-600 disabled:text-gray-600 disabled:cursor-not-allowed transition-all font-medium btn-hover-scale"
                   >
                     <RefreshCw size={18} />
                     重置列表
@@ -492,20 +508,33 @@ function App() {
                 </div>
               </div>
               
-              {filteredParticipants().length === 0 ? (
+              {filtered.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <Users size={48} className="mx-auto mb-3 opacity-50" />
                   <p>{searchQuery.trim() ? '无匹配结果' : '暂无签到人员'}</p>
                 </div>
               ) : (
-                <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {filteredParticipants().map((participant) => (
-                    <div
-                      key={participant.id}
-                      className={`flex items-center gap-2 p-3 rounded-lg transition-colors ${
-                        participant.isWinner ? 'bg-yellow-500/10 border border-yellow-500/30' : 'bg-[#888888]/10 hover:bg-[#888888]/20'
-                      }`}
-                    >
+                <div 
+                  ref={listRef}
+                  className="space-y-2 max-h-96 overflow-y-auto"
+                  onScroll={handleScroll}
+                >
+                  <div style={{ 
+                    height: `${filtered.length * itemHeight}px`, 
+                    position: 'relative' 
+                  }}>
+                    {visibleParticipants.map((participant, index) => (
+                      <div
+                        key={participant.id}
+                        className={`flex items-center gap-2 p-3 rounded-lg transition-colors ${
+                          participant.isWinner ? 'bg-yellow-500/10 border border-yellow-500/30' : 'bg-[#888888]/10 hover:bg-[#888888]/20'
+                        }`}
+                        style={{ 
+                          position: 'absolute', 
+                          top: `${(startIndex + index) * itemHeight}px`,
+                          width: '100%'
+                        }}
+                      >
                       {editingId === participant.id ? (
                         <>
                           <span className="text-gray-500 text-sm w-10 flex-shrink-0">
@@ -555,8 +584,8 @@ function App() {
                             value={noteInput}
                             onChange={(e) => setNoteInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && saveNote()}
-                            placeholder="输入备注..."
-                            className="w-32 px-2 py-1 rounded geek-input"
+                            placeholder="备注..."
+                            className="flex-1 sm:w-32 px-2 py-1 rounded geek-input"
                             autoFocus
                           />
                           <button
@@ -567,7 +596,7 @@ function App() {
                           </button>
                           <button
                             onClick={cancelNoteEdit}
-                            className="p-1.5 text-red-400 hover:bg-red-400/10 rounded transition-colors"
+                            className="p-1.5 text-red-400 hover:bg-red-400/10 rounded transition-colors sm:ml-2"
                           >
                             <X size={16} />
                           </button>
@@ -580,21 +609,23 @@ function App() {
                           <span className="flex-1 font-medium text-[#f0f0f0]">
                             {participant.name}
                           </span>
-                          {participant.tag && (
-                            <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${getTagColor(participant.tag)}`}>
-                              {getTagLabel(participant.tag)}
-                            </span>
-                          )}
-                          {participant.note && (
-                            <span className="px-2 py-0.5 text-xs text-yellow-400 border border-yellow-400/30 rounded-full">
-                              有备注
-                            </span>
-                          )}
-                          {participant.isWinner && (
-                            <span className="flex items-center gap-1 text-yellow-400 text-sm">
-                              <Trophy size={14} />
-                            </span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {participant.tag && (
+                              <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${getTagColor(participant.tag)}`}>
+                                {getTagLabel(participant.tag)}
+                              </span>
+                            )}
+                            {participant.note && (
+                              <span className="px-2 py-0.5 text-xs text-yellow-400 border border-yellow-400/30 rounded-full">
+                                有备注
+                              </span>
+                            )}
+                            {participant.isWinner && (
+                              <span className="hidden sm:flex items-center gap-1 text-yellow-400 text-sm">
+                                <Trophy size={14} />
+                              </span>
+                            )}
+                          </div>
                           <button
                             onClick={() => toggleCheckIn(participant)}
                             className={`p-1.5 rounded transition-colors ${
@@ -631,6 +662,7 @@ function App() {
                       )}
                     </div>
                   ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -638,7 +670,7 @@ function App() {
         )}
 
         {activeTab === 'lottery' && (
-          <div className="bg-[#888888]/10 rounded-xl border border-[#888888] p-6 scanline-overlay relative">
+          <div className="bg-[#888888]/10 rounded-xl border border-[#888888] p-6 scanline-overlay relative card-glow">
             <div className="flex items-center gap-2 mb-6">
               <Gift size={24} className="text-[#00ff88]" />
               <h2 className="text-lg font-semibold text-[#00ff88]">幸运抽奖</h2>
@@ -669,7 +701,7 @@ function App() {
               <button
                 onClick={isDrawing && !isStopping ? stopDraw : startDraw}
                 disabled={getEligibleParticipants().length === 0 || isStopping}
-                className={`px-12 py-4 text-xl font-bold rounded-xl border-2 transition-all ${
+                className={`px-12 py-4 text-xl font-bold rounded-xl border-2 transition-all btn-hover-scale ${
                   isStopping
                     ? 'bg-red-500 text-[#0f172a] border-red-500'
                     : isDrawing
@@ -701,8 +733,31 @@ function App() {
       </div>
 
       {showModal && winner && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1b1d] rounded-xl border-2 border-yellow-500 p-8 max-w-md w-full text-center modal-fade-in">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 overflow-hidden">
+          {[...Array(60)].map((_, i) => {
+            const colors = ['#00ff88', '#ff4444', '#ffaa00', '#00ffff', '#ff00ff', '#88ff00']
+            const color = colors[i % colors.length]
+            const left = Math.random() * 100
+            const delay = Math.random() * 0.8
+            const duration = 2 + Math.random() * 0.8
+            const size = 8 + Math.random() * 8
+            return (
+              <div
+                key={i}
+                className="confetti"
+                style={{
+                  left: `${left}%`,
+                  backgroundColor: color,
+                  animationDelay: `${delay}s`,
+                  animationDuration: `${duration}s`,
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  borderRadius: Math.random() > 0.5 ? '50%' : '0'
+                }}
+              />
+            )
+          })}
+          <div className="bg-[#1a1b1d] rounded-xl border-2 border-yellow-500 p-8 max-w-md w-full text-center modal-fade-in relative z-10">
             <Trophy size={64} className="mx-auto mb-4 text-yellow-400" />
             <h2 className="text-3xl font-bold text-yellow-400 mb-6">
               恭喜中奖！
@@ -712,7 +767,7 @@ function App() {
             </div>
             <button
               onClick={() => setShowModal(false)}
-              className="w-full py-3 bg-[#00ff88] text-[#0f172a] rounded-lg hover:bg-[#00cc6a] transition-all font-bold"
+              className="w-full py-3 bg-[#00ff88] text-[#0f172a] rounded-lg hover:bg-[#00cc6a] transition-all font-bold btn-hover-scale"
             >
               确定
             </button>
@@ -732,13 +787,13 @@ function App() {
             <div className="flex gap-4">
               <button
                 onClick={() => setConfirmModal({ show: false, title: '', message: '', onConfirm: null })}
-                className="flex-1 py-3 border-2 border-gray-500 text-gray-400 rounded-lg hover:border-gray-300 hover:text-gray-300 transition-all font-bold"
+                className="flex-1 py-3 border-2 border-gray-500 text-gray-400 rounded-lg hover:border-gray-300 hover:text-gray-300 transition-all font-bold btn-hover-scale"
               >
                 取消
               </button>
               <button
                 onClick={() => confirmModal.onConfirm?.()}
-                className="flex-1 py-3 bg-red-500 text-[#0f172a] rounded-lg hover:bg-red-400 transition-all font-bold"
+                className="flex-1 py-3 bg-red-500 text-[#0f172a] rounded-lg hover:bg-red-400 transition-all font-bold btn-hover-scale"
               >
                 确定
               </button>

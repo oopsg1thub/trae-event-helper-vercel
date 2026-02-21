@@ -162,3 +162,78 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--geek-white);
 }
+
+@keyframes buttonScale {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes listItemFadeIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes cardGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 255, 136, 0.1), inset 0 0 10px rgba(0, 255, 136, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.2), inset 0 0 20px rgba(0, 255, 136, 0.1);
+  }
+}
+
+.btn-hover-scale:hover {
+  animation: buttonScale 0.3s ease-out;
+}
+
+.list-item-fade-in {
+  animation: listItemFadeIn 0.3s ease-out;
+}
+
+.card-glow {
+  animation: cardGlow 3s ease-in-out infinite;
+}
+
+.tab-active-glow {
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.4), inset 0 0 10px rgba(0, 255, 136, 0.1);
+}
+
+.title-neon {
+  text-shadow: 0 0 3px var(--geek-green), 0 0 6px var(--geek-green), 0 0 9px rgba(0, 255, 136, 0.6);
+}
+
+.typewriter-container {
+  overflow: hidden;
+}
+
+.typewriter-text {
+  display: inline-block;
+  border-right: 2px solid var(--geek-green);
+  animation: typewriter 1.5s steps(12, end), blinkCursor 0.75s step-end infinite;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blinkCursor {
+  from, to { border-color: transparent; }
+  50% { border-color: var(--geek-green); }
+}
+
+@keyframes confettiFall {
+  0% { transform: translateY(-150vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(150vh) rotate(720deg); opacity: 0; }
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  opacity: 0;
+  animation: confettiFall 1.8s ease-out forwards;
+}
